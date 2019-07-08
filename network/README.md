@@ -7,7 +7,6 @@
 - numpy
 - matplotlib (imagemagick or pillow enabled)
 - cv2
-- meshzoo (https://pypi.org/project/meshzoo/)
 
 # examples
 
@@ -22,3 +21,14 @@ python makeAnimation.py kanto.png kanto_node.pickle --output kanto_anime.gif
 python makemesh.py maze.png --output maze_node.pickle
 python makeAnimation.py maze.png maze_node.pickle --output maze_anime.gif --frames 20
 ```
+## citation
+@article{article,
+    author = {Tero, Atsushi and Takagi, Seiji and Saigusa, Tetsu and Ito, Kentaro and Bebber, Daniel and Fricker, Mark and Yumiki, Kenji and Kobayashi, Ryo and Nakagaki, Toshiyuki},
+    year = {2010},
+    month = {01},
+    pages = {439-42},
+    title = {Rules for Biologically Inspired Adaptive Network Design},
+    volume = {327},
+    journal = {Science (New York, N.Y.)},
+    doi = {10.1126/science.1177894}
+}
