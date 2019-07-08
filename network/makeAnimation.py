@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse
 import scipy.sparse.linalg
 import pickle
 import matplotlib.pyplot as plt
@@ -10,7 +11,9 @@ def distance(u, v):
     return np.linalg.norm(u-v)
 
 def fQ(q):
-    return np.abs(q)**gamma / (1 + np.abs(q)**gamma)
+#    return np.abs(q)**gamma / (1 + np.abs(q)**gamma)
+    qg = q.power(2).power(gamma/2)
+    return -(-qg.log1p()).expm1()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("input", type=str)
@@ -51,8 +54,10 @@ def update():
     global lines
     global points
     ax.set_title("t={}".format(ite))
-    for i,e in edges:
-        lines[(i,e)].set_linewidth(Dmat[i,e] * 10)
+    D = Dmat.tocoo()
+    for i,e,v in zip(D.row, D.col, D.data):
+        if i < e:
+            lines[(i,e)].set_linewidth(v * 10)
         
     
     return tuple(lines.values())
@@ -82,6 +87,8 @@ for i, e in enumerate(E):
         Dmat[i, ei] = initD
         invDist[i, ei] = 1 / distance(V[i], V[ei])
         if i < ei: edges.append((i, ei))
+Dmat = scipy.sparse.csr_matrix(Dmat)
+invDist = scipy.sparse.csr_matrix(invDist)
 
 print("V:", len(V))
 
@@ -96,38 +103,33 @@ def f(frame):
     if frame * 5 == ite:
         return update()
 
-    b = np.zeros(len(V))
+    b = scipy.sparse.lil_matrix(np.zeros((len(V), 1)))
     for offset in range(5):
         ite += 1
         b[:] = 0
 
         # forward
-        mat = Dmat * invDist
+        mat = Dmat.multiply(invDist)
 
         s, t = np.random.choice(C, 2, replace=False)
         
-        mat -= np.diag(mat.sum(axis=1))
+        mat.setdiag(-np.asarray(mat.sum(axis=1)).reshape(-1))
 
         b[s] = I
         b[t] = -I
-        P = scipy.sparse.linalg.spsolve(mat, b)
-        #P = np.linalg.solve(mat, b)
+        P = scipy.sparse.linalg.spsolve(mat, b.tocsr())
 
-        Q = mat * (P[:,None] - P[None,:])
+        Q = mat.multiply(P[:,None]) - mat.multiply(P[None,:])
 
         # update
-        Dmat = Dmat + h * (fQ(Q) - Dmat)
+        Dmat = Dmat + h * (scipy.sparse.csr_matrix(fQ(Q)) - Dmat)
+        #print(type(Dmat))
 
-        print("iteration {:d}, flows {:d}->{:d}, Dmin {:f}, Dmax {:f}".format(ite, s,t, Dmat[np.nonzero(Dmat)].min(), Dmat.max()))
+        print("iteration {:d}, flows {:d}->{:d}, Dmin {:f}, Dmax {:f}".format(ite, s,t, Dmat.data.min(), Dmat.max()))
+    Dmat.eliminate_zeros()
     return update()
 
 anim = FuncAnimation(fig, f, init_func=init, blit=True, frames=args.frames)
 anim.save(args.output, writer='imagemagick', fps=5)
 
 exit(0)
-
-
-
-
-
-
