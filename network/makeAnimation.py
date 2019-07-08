@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse.linalg
 import pickle
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -38,7 +39,7 @@ def init():
     for i in range(len(V)):
         for e in E[i]:
            if i < e:
-                im, = ax.plot(*V[[i,e]].T, "r-", linewidth=D[(i,e)] * 10)
+                im, = ax.plot(*V[[i,e]].T, "r-", linewidth=Dmat[i,e] * 10)
                 lines[(i, e)] = im
     points = dict()
     for c in C:
@@ -50,16 +51,17 @@ def update():
     global lines
     global points
     ax.set_title("t={}".format(ite))
-    for k in lines.keys():
-        lines[k].set_linewidth(D[k] * 10)
+    for i,e in edges:
+        lines[(i,e)].set_linewidth(Dmat[i,e] * 10)
         
     
+    return tuple(lines.values())
     #for c in C:  # show source/sink
     #    if c == s or c == t:
     #        points[c].set_color("r")
     #    else:
     #        points[c].set_color("b")
-    return tuple(lines.values()) + tuple(points.values())
+    #return tuple(lines.values()) + tuple(points.values())
 
 
 
@@ -67,65 +69,56 @@ with open(args.pickle, "rb") as f:
     V, E, C = pickle.load(f)
 V = np.array(V) # nodes
 C = np.array(C) # cities
-D = dict()      # Dij
+Dmat = np.zeros((len(V), len(V))) # Dij
+invDist = np.zeros_like(Dmat)
+edges = []
+
 initD = 0.01
 I = 2.0
 gamma = 1.8
 h = 0.03        # Euler
 for i, e in enumerate(E):
     for ei in e:
-        D[(i, ei)] = initD
+        Dmat[i, ei] = initD
+        invDist[i, ei] = 1 / distance(V[i], V[ei])
+        if i < ei: edges.append((i, ei))
 
 print("V:", len(V))
 
 s,t =None, None
 ite = 0
-k = dict()
 
 def f(frame):
     global ite
     global s
     global t
-    global D
-    global k
+    global Dmat
     if frame * 5 == ite:
         return update()
 
-    mat = np.zeros((len(V), len(V)))
     b = np.zeros(len(V))
     for offset in range(5):
         ite += 1
-        mat[:] = 0
         b[:] = 0
 
         # forward
-        for (i,j), d in D.items():
-            k[(i,j)] = d / distance(V[i], V[j])
+        mat = Dmat * invDist
 
         s, t = np.random.choice(C, 2, replace=False)
-        for i in range(len(V)):
-            if i==s:
-                for e in E[i]:
-                    mat[i, e] = -k[(i,e)]
-            else:
-                ksum = 0
-                for e in E[i]:
-                    mat[i, e] = -k[(i,e)]
-                    ksum += k[(i,e)]
-                mat[i,i] = ksum
-                
+        
+        mat -= np.diag(mat.sum(axis=1))
+
         b[s] = I
         b[t] = -I
-        P = np.linalg.solve(mat, b)
-        Q = dict()
-        for (i,j), v in k.items():
-            Q[(i,j)] = v * (P[i] - P[j])
+        P = scipy.sparse.linalg.spsolve(mat, b)
+        #P = np.linalg.solve(mat, b)
+
+        Q = mat * (P[:,None] - P[None,:])
 
         # update
-        for (i,j), d in D.items():
-            D[(i,j)] = d + h * (fQ(Q[(i,j)]) - d)
+        Dmat = Dmat + h * (fQ(Q) - Dmat)
 
-        print("iteration {:d}, flows {:d}->{:d}, Dmin {:f}, Dmax {:f}".format(ite, s,t, min(D.values()), max(D.values())))
+        print("iteration {:d}, flows {:d}->{:d}, Dmin {:f}, Dmax {:f}".format(ite, s,t, Dmat[np.nonzero(Dmat)].min(), Dmat.max()))
     return update()
 
 anim = FuncAnimation(fig, f, init_func=init, blit=True, frames=args.frames)
