@@ -1,4 +1,6 @@
 # SAT solver
+![AmoebaSAT](./sample_image/visualize.png)
+![AmoebaSAT-Brownian](./sample_image/visualize2.png)
 ## setup
 [SATLIB](https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html)からuf50-218をダウンロードしてフォルダをn50/にリネーム
 
@@ -10,6 +12,7 @@ python visualize.py    # eval*.pyで生成したcsvの可視化
 ```
 
 ## citation
+```
 @article{article,
     author = {Aono, Masashi and Kim, Song-Ju and Zhu, Liping and Naruse, Makoto and Ohtsu, Motoichi and Hori, Hirokazu and Hara, Masahiko},
     year = {2014},
@@ -29,14 +32,31 @@ python visualize.py    # eval*.pyで生成したcsvの可視化
     year={2014}
 }
 
+@article{Aono_2015,
+	doi = {10.1088/0957-4484/26/23/234001},
+	url = {https://doi.org/10.1088%2F0957-4484%2F26%2F23%2F234001},
+	year = 2015,
+	month = {may},
+	publisher = {{IOP} Publishing},
+	volume = {26},
+	number = {23},
+	pages = {234001},
+	author = {M Aono and S Kasai and S-J Kim and M Wakabayashi and H Miwa and M Naruse},
+	title = {Amoeba-inspired nanoarchitectonic computing implemented using electrical Brownian ratchets},
+	journal = {Nanotechnology},
+}
+```
+
 # Solution-searching
 解が移り変わるやつ
 
+![](./sample_image/solution_search.png)
 ```
 python solution_search.py
 ```
 
 ## citation
+```
 @Article{Aono2015,
     author="Aono, Masashi
     and Wakabayashi, Masamitsu",
@@ -52,5 +72,4 @@ python solution_search.py
     doi="10.1007/s11084-015-9450-5",
     url="https://doi.org/10.1007/s11084-015-9450-5"
 }
-
-
+```

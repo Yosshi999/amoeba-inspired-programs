@@ -29,7 +29,7 @@ def test_algorithm(algo, arms, num_sims, horizon, xa, xb, s, q):
                     index - 1] + reward
             algo.update(chosen_arm, reward)
 
-            if sim==0 and algo.__class__.__name__ == "ToWSampling":
+            if sim==0 and algo.__class__.__name__ == "ToWModel":
                 xa.append(algo.model.x[0])
                 xb.append(algo.model.x[1])
                 s.append(algo.model.s)
@@ -60,7 +60,7 @@ class ModEpsilonGreedy(EpsilonGreedy):
 
 
 
-class ToWSampling:
+class ToWModel:
     def __init__(self, alpha=1, mu=1):
         self.model = ToW(alpha, mu)
         self.buffer = []
@@ -96,8 +96,8 @@ class ToWSampling:
         
 
 algos = [
-    #ToWSampling(mu=5.),
-    ToWSampling(alpha=1, mu=3),
+    #ToWModel(mu=5.),
+    ToWModel(alpha=1, mu=3),
     EpsilonGreedy(0.2, [], []),
     ModEpsilonGreedy(0.05, [], []),
     #ModEpsilonGreedy(0.4, [], []),
@@ -128,7 +128,7 @@ def test():
         best_arms_n = np.add.accumulate(best_arms)
         best_arms_rate = best_arms_n / times
         plt.plot(times, best_arms_rate, label=al.__class__.__name__,
-            lw = 2 if al.__class__.__name__ == "ToWSampling" else 1)
+            lw = 2 if al.__class__.__name__ == "ToWModel" else 1)
 
     plt.ylim(0.4, 1.0)
     plt.legend()
@@ -165,7 +165,7 @@ def test2():
         best_arms_n = np.add.accumulate(best_arms)
         best_arms_rate = best_arms_n / times
         plt.plot(times, best_arms_rate, label=al.__class__.__name__,
-            lw = 2 if al.__class__.__name__ == "ToWSampling" else 1)
+            lw = 2 if al.__class__.__name__ == "ToWModel" else 1)
 
     plt.ylim(0.92, 1.0)
     plt.legend()

@@ -1,7 +1,12 @@
 # Tag-of-War model for 2-Arm Bandit Problem
 綱引きモデル
 
+![bandit sample](./sample.png)
+![](./sample2.png)
+![](./sample3.png)
+
 ## citation
+```
 @article{KIM201029,
     title = "Tug-of-war model for the two-bandit problem: Nonlocally-correlated parallel exploration via resource conservation",
     journal = "Biosystems",
@@ -14,3 +19,4 @@
     url = "http://www.sciencedirect.com/science/article/pii/S0303264710000559",
     author = "Song-Ju Kim and Masashi Aono and Masahiko Hara",
 }
+```
